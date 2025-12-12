@@ -67,6 +67,51 @@ function getEmojiForCategory(category) {
 let userOrder = {}; 
 let currentTotal = 0;
 
+// Функция очистки корзины
+function clearCart() {
+    console.log('Очистка корзины запущена');
+    
+    // Проверяем, есть ли что очищать
+    let hasItems = false;
+    for (const id in userOrder) {
+        if (userOrder[id] && userOrder[id].history && userOrder[id].history.length > 0) {
+            hasItems = true;
+            break;
+        }
+    }
+    
+    if (!hasItems) {
+        alert('Корзина уже пуста!');
+        return;
+    }
+    
+    if (!confirm(`Очистить весь заказ на сумму ${currentTotal.toLocaleString('ru-RU')} ₽?`)) {
+        return;
+    }
+    
+    // Очищаем всё
+    userOrder = {};
+    localStorage.removeItem('kf_order');
+    
+    // Сбрасываем все карточки
+    document.querySelectorAll('.menu-item.selected').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Сбрасываем счетчики
+    document.querySelectorAll('.qty-badge').forEach(badge => {
+        badge.textContent = '0';
+    });
+    
+    // Обновляем корзину
+    updateCartSummary();
+    
+    // Закрываем модальное окно
+    closeCart();
+    
+    alert('✅ Корзина очищена!');
+}
+
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     // Telegram WebApp init
