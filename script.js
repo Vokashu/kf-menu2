@@ -351,6 +351,57 @@ function loadOrderFromStorage() {
     }
 }
 
+// Функция для очистки корзины
+function clearCart() {
+    // Проверяем, есть ли что очищать
+    let hasItems = false;
+    for (const id in userOrder) {
+        if (userOrder[id] && userOrder[id].history && userOrder[id].history.length > 0) {
+            hasItems = true;
+            break;
+        }
+    }
+    
+    if (!hasItems) {
+        alert('Корзина уже пуста!');
+        return;
+    }
+    
+    // Подтверждение
+    if (!confirm(`Вы уверены, что хотите очистить весь заказ?\nОбщая сумма: ${currentTotal.toLocaleString('ru-RU')} ₽`)) {
+        return;
+    }
+    
+    // Очищаем заказ
+    userOrder = {};
+    
+    // Удаляем из localStorage
+    localStorage.removeItem('kf_order');
+    
+    // Обновляем визуал всех карточек
+    document.querySelectorAll('.menu-item.selected').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Обнуляем счетчики
+    document.querySelectorAll('.qty-badge').forEach(badge => {
+        badge.textContent = '0';
+    });
+    
+    // Обновляем корзину
+    updateCartSummary();
+    
+    // Закрываем модальное окно
+    closeCart();
+    
+    // Показываем уведомление
+    if (window.Telegram?.WebApp && Telegram.WebApp.showAlert) {
+        Telegram.WebApp.showAlert('✅ Корзина очищена!');
+    } else {
+        alert('Корзина очищена!');
+    }
+}
+
 function sendOrderToBot() {
     let hasItems = false;
     for (const id in userOrder) {
