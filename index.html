@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Карл и Фридрих | Чек</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* CSS переменные для темы */
+        :root {
+            --bg-color: #f5f5f7;
+            --text-color: #000;
+            --card-bg: #fff;
+            --border-color: #e0e0e0;
+            --primary-color: #2481cc;
+            --danger-color: #ff4b4b;
+            --nav-height: 70px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1a1a;
+                --text-color: #fff;
+                --card-bg: #2d2d2d;
+                --border-color: #404040;
+            }
+        }
+
+        /* База */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding-top: 80px;
+            padding-bottom: 90px;
+            margin: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* 1. Верхняя Навигация */
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            white-space: nowrap;
+            z-index: 1000;
+            padding: 0 15px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-bar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .nav-item {
+            display: inline-block;
+            padding: 12px 20px;
+            margin-right: 10px;
+            border-radius: 25px;
+            background: #f0f0f0;
+            color: #555;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .nav-item.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        .section-header {
+            font-size: 1.4em;
+            font-weight: 800;
+            margin: 30px 0 15px;
+            padding-left: 5px;
+            color: var(--text-color);
+            scroll-margin-top: 90px;
+        }
+
+        /* 2. Карточка блюда */
+        .menu-item {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 16px;
+            position: relative;
+            transition: transform 0.1s;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            min-height: 90px;
+        }
+        
+        .menu-item:active {
+            transform: scale(0.98);
+        }
+        
+        .menu-item.selected {
+            border: 1px solid var(--primary-color);
+            background: rgba(36, 129, 204, 0.05);
+        }
+
+        .item-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            margin-right: 15px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+        
+        .item-info {
+            flex-grow: 1;
+            padding-right: 10px;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            font-size: 1.05em;
+            line-height: 1.2;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+        
+        .item-price {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+
+        /* Счетчик и кнопка минус */
+        .item-counter {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .menu-item.selected .item-counter {
+            display: flex;
+        }
+        
+        .qty-badge {
+            background: var(--primary-color);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 2px 5px rgba(36, 129, 204, 0.3);
+        }
+        
+        .minus-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--danger-color);
+            color: var(--danger-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 3. Нижний бар */
+        .cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #222;
+            padding: 15px 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .cart-total {
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+        
+        .cart-desc {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-left: 10px;
+        }
+        
+        .view-order-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1em;
+        }
+
+        /* 4. Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            display: none;
+            align-items: flex-end;
+        }
+        
+        .modal-content {
+            background: var(--bg-color);
+            width: 100%;
+            max-height: 90%;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .modal-header {
+            background: var(--card-bg);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: 800;
+        }
+        
+        .close-btn {
+            background: #f0f0f0;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+        }
+        
+        .modal-scroll-area {
+            padding: 15px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
+        .order-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .order-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .order-name {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        
+        .order-total-price {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-color);
+            font-size: 0.95em;
+            color: var(--text-color);
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .delete-single-btn {
+            color: var(--danger-color);
+            background: rgba(255, 75, 75, 0.1);
+            border: 1px solid var(--danger-color);
+            padding: 5px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .send-btn-container {
+            padding: 20px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .send-btn {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 16px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar" id="nav-bar"></div>
+    <div class="container" id="menu-container"></div>
+
+    <div class="cart-bar" id="cart-bar" style="display: none;" onclick="openCart()">
+        <div>
+            <span class="cart-total" id="cart-total">0 ₽</span>
+            <span class="cart-desc">открыть чек</span>
+        </div>
+        <button class="view-order-btn">Мой заказ</button>
+    </div>
+
+    <div class="modal-overlay" id="cart-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Ваш счет</div>
+                <button class="close-btn" onclick="closeCart()">×</button>
+            </div>
+            <div class="modal-scroll-area" id="order-details-list"></div>
+            <div class="send-btn-container">
+                <button class="send-btn" onclick="sendOrderToBot()">Подтвердить заказ</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="menu_data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
